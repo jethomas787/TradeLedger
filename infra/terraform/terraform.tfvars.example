@@ -1,0 +1,16 @@
+# ── infra/terraform.tfvars ───────────────────────────────────
+# Note: Do not store actual secrets (passwords/keys) here.
+
+location          = "canadacentral"
+environment       = "dev"
+pg_admin_username = "pgadmin"
+project_prefix = "tradejournal"
+
+# Fill these in — NOT secrets, just configuration
+# Get from: az ad signed-in-user show --query id -o tsv
+personal_account_object_id = "7e60a2c6-6f63-4caf-861b-32b4fd2a6312"
+
+# Get from: curl -s https://api.ipify.org
+dev_machine_ip             = "23.16.52.187"
+
+project_prefix = "tradejournal"
