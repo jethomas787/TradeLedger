@@ -1,30 +1,31 @@
-*.env
-.env
-terraform.tfvars
-k8s/secrets.yaml
-.terraform/
 *.tfstate
 *.tfstate.backup
-*.tfplan
+.terraform/
+tfplan
+.terraform.lock.hcl
+# Python
 __pycache__/
 *.pyc
 .pytest_cache/
-target/
-dbt_packages/
-logs/
-simulator/output/*
-!simulator/output/.gitkeep
-.DS_Store
-.vscode/settings.jsoninfra/tfplan
-*.tfplan
-tfplan
-infra/tfplan
-.venv/
-venv/
-venv_stable/
-venv*/
-ENV/
-__pycache__/
-*.py[cod]
-*$py.class
-
+htmlcov/
+coverage.xml
+.coverage
+# dbt
+dbt_tradeledger/target/
+dbt_tradeledger/dbt_packages/
+dbt_tradeledger/logs/
+# Local ADLS copy — large and transient
+local_bronze/
+*.duckdb
+*.duckdb.wal
+# Credentials — NEVER in the repo
+.env
+.env.*
+*.env
+azure_credentials.json
+*.pem
+*.pfx
+# Security scan outputs (pipeline artifacts, not source)
+bandit-report.json
+pip-audit-report.json
+semgrep-report.json

@@ -1,17 +1,21 @@
-azure-storage-blob==12.19.0
-azure-keyvault-secrets==4.7.0
-azure-identity==1.15.0
-pandas==2.1.4
-faker==22.0.0
+# Azure SDK
+azure-identity==1.16.1
+azure-keyvault-secrets==4.8.0
+azure-storage-file-datalake==12.18.0
+# Analytics (local, zero server cost)
+duckdb==0.10.3
+# dbt — DuckDB for local dev, Databricks for Day 12 stretch
+dbt-duckdb==1.8.1
+dbt-databricks==1.8.7
+# Testing
 pytest==8.2.2
-pytest-mock==3.12.0
-black==24.1.1
-flake8==7.0.0
-bandit==1.7.7
-dbt-databricks==1.7.3
-pytest
-psycopg2-binary
-ruff>=0.4.0
-bandit>=1.7.9
-detect-secrets>=1.4.0
-EOF
+pytest-cov==5.0.0
+pytest-mock==3.14.0
+# Security & quality
+ruff==0.4.5
+bandit==1.7.9
+detect-secrets==1.4.0
+pip-audit==2.7.3
+semgrep==1.75.0
+# Test data
+faker==26.0.0
