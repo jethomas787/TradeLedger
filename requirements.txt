@@ -1,13 +1,9 @@
-confluent-kafka==2.3.0
 azure-storage-blob==12.19.0
 azure-keyvault-secrets==4.7.0
 azure-identity==1.15.0
 pandas==2.1.4
-sqlalchemy>=1.4.0,<2.0.0
-pyodbc==5.0.1
-python-dotenv==1.0.0
 faker==22.0.0
-pytest==7.4.4
+pytest==8.2.2
 pytest-mock==3.12.0
 black==24.1.1
 flake8==7.0.0
@@ -16,6 +12,6 @@ dbt-databricks==1.7.3
 pytest
 psycopg2-binary
 ruff>=0.4.0
-bandit>=1.7.8
+bandit>=1.7.9
 detect-secrets>=1.4.0
 EOF
