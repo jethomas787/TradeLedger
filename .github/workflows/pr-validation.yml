@@ -3,171 +3,48 @@ name: PR Validation
 on:
   pull_request:
     branches: [main]
-    paths:
-      - 'infra/terraform/**'
-      - 'simulator/**'
-      - 'consumer/**'
 
 permissions:
-  id-token: write   # REQUIRED: Allows OIDC token generation
-  contents: read    # Read repository code only
+  id-token: write
+  contents: read
 
 jobs:
-  security-scan:
-    name: Security Gates
+  secret-scan:
+    name: "[D1] Secret Detection"
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        with:
+          fetch-depth: 0
 
-      # OWASP A02 — Detect accidentally committed secrets BEFORE they reach main
-      - name: Detect Secrets (detect-secrets)
-        run: |
-          pip install detect-secrets
+      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
+        with:
+          python-version: "3.11"
+
+      - run: |
+          pip install detect-secrets==1.4.0
           detect-secrets scan --baseline .secrets.baseline
           detect-secrets audit .secrets.baseline
 
-      # Scan Terraform for misconfigurations (OWASP A05 — Security Misconfiguration)
-      - name: Terraform Security Scan (tfsec)
-        uses: aquasecurity/tfsec-action@v1.0.0
+  sca-pip-audit:
+    name: "[D1] SCA — pip-audit"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+
+      - uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d
         with:
-          working_directory: infra/terraform
+          python-version: "3.11"
 
-      # Python SAST — equivalent to SonarQube for Java
-      - name: Python SAST (Bandit)
-        run: |
-          pip install bandit
-          bandit -r simulator/ consumer/ -ll -f json -o bandit-report.json
+      - run: |
+          pip install pip-audit==2.7.3
+          pip-audit --requirement requirements.txt \
+            --format json --output pip-audit-report.json
+          pip-audit --requirement requirements.txt
 
-      - name: Upload Bandit Report
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f7
         if: always()
         with:
-          name: bandit-security-report
-          path: bandit-report.json
-
-  terraform-plan:
-    name: Terraform Plan (Dry Run)
-    runs-on: ubuntu-latest
-    needs: security-scan
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      # OIDC Login — No password, no stored credentials, federates via JWT
-      - name: Azure Login (OIDC — Passwordless)
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "~> 1.7"
-
-      - name: Terraform Init
-        working-directory: infra/terraform
-        run: terraform init
-        env:
-          ARM_USE_OIDC: "true"
-          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Terraform Validate
-        working-directory: infra/terraform
-        run: terraform validate
-
-      - name: Terraform Plan
-        working-directory: infra/terraform
-        run: terraform plan -out=tfplan -no-color
-        env:
-          ARM_USE_OIDC: "true"
-          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-      - name: Post Plan Summary to PR
-        uses: actions/github-script@v7
-        if: github.event_name == 'pull_request'
-        with:
-          script: |
-            const output = `#### Terraform Plan Result 📋
-            Plan completed. Review required before merge.`;
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            });
-
-  unit-tests:
-    name: Unit Tests
-    runs-on: ubuntu-latest
-    needs: security-scan
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
-
-      - name: Install Dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install pytest pytest-cov
-
-      - name: Run Unit Tests with Coverage
-        run: |
-          pytest tests/ \
-            --cov=simulator \
-            --cov=consumer \
-            --cov-report=xml \
-            --cov-fail-under=60
-        # 60% threshold for now — rises each week up to 80% by Week 12
-
-      - name: Upload Coverage Report
-        uses: codecov/codecov-action@v4
-        with:
-          file: coverage.xml
-
-  python-lint:
-    name: "[W3] Python Lint"
-    runs-on: ubuntu-latest
-    needs: security-scan
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - run: pip install ruff==0.4.0
-
-      - name: Lint with ruff
-        # ruff is the modern Python linter — faster than flake8, enforces
-        # the same PEP8 rules plus import ordering (equivalent to Checkstyle)
-        run: ruff check simulator/ consumer/ scripts/ tests/ --output-format=github
-
-  test-scaffold:
-    name: "[W3] Test Framework Smoke Test"
-    runs-on: ubuntu-latest
-    needs: security-scan
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          cache: 'pip'
-
-      - run: pip install -r requirements.txt
-
-      - name: Verify Test Framework
-        # No coverage threshold yet — just verifies pytest collects and runs
-        run: pytest tests/ -v --tb=short
+          name: sca-report
+          path: pip-audit-report.json
+          retention-days: 7

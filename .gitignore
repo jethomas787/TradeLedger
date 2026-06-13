@@ -28,4 +28,6 @@ azure_credentials.json
 # Security scan outputs (pipeline artifacts, not source)
 bandit-report.json
 pip-audit-report.json
-semgrep-report.json
+semgrep-report.json.venv/
+.venv/
+venv_stable/
