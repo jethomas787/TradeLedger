@@ -16,6 +16,10 @@ terraform {
       source  = "confluentinc/confluent"
       version = "~> 2.5.0"
     }
+    http = { 
+      source = "hashicorp/http",          
+      version = "~> 3.0"   
+      } 
   }
 }
 
