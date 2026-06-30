@@ -29,15 +29,3 @@ variable "project_prefix" {
   description = "Short prefix used in resource naming"
   default     = "tradejournal"
 }
-
-variable "confluent_cloud_api_key" {
-  description = "Confluent Cloud organisation-level API key. Used by Terraform only. Injected by CI/CD from Key Vault at plan/apply time."
-  type        = string
-  sensitive   = true
-}
-
-variable "confluent_cloud_api_secret" {
-  description = "Confluent Cloud organisation-level API secret. Used by Terraform only. Never stored in code or .env files."
-  type        = string
-  sensitive   = true
-}

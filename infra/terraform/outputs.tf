@@ -28,23 +28,3 @@ output "pg_connection_string_hint" {
   sensitive   = false
 }
 
-output "confluent_environment_id" {
-  description = "Confluent environment ID"
-  value       = confluent_environment.main.id
-}
-output "confluent_cluster_id" {
-  description = "Confluent cluster ID — for verification in the Confluent console"
-  value       = confluent_kafka_cluster.main.id
-}
-output "confluent_bootstrap_endpoint" {
-  description = "Kafka bootstrap endpoint — also stored in Key Vault as confluent-bootstrap-server"
-  value       = confluent_kafka_cluster.main.bootstrap_endpoint
-}
-output "confluent_topic_name" {
-  description = "The Kafka topic name"
-  value       = confluent_kafka_topic.trades_raw.topic_name
-}
-output "confluent_service_account_id" {
-  description = "Service account ID — for ACL verification in the Confluent console"
-  value       = confluent_service_account.admin.id
-}
