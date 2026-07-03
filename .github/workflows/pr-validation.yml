@@ -42,7 +42,8 @@ jobs:
             --format json --output pip-audit-report.json
           pip-audit --requirement requirements.txt
 
-      - uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f7
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: sca-report
