@@ -10,6 +10,6 @@ pytest-mock==3.14.0
 ruff==0.4.5
 bandit==1.7.9
 detect-secrets==1.4.0
-pip-audit==2.9.0
+pip-audit==2.9.0    
 semgrep==1.75.0
 faker==26.0.0
